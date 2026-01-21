@@ -1,3 +1,5 @@
+# regime_detection
+
 ---
 
 # **Research Report: Dynamic Regime-Based Sector Allocation & Tail Risk Hedging**
