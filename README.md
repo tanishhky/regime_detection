@@ -35,9 +35,9 @@ We utilized 11 GICS Sector SPDR ETFs (`XLE`, `XLK`, `XLF`, etc.) and Macro Facto
 
 Risk signals were engineered to capture both realized and implied volatility:
 
-1. **Log-Returns ():** 
-2. **Realized Volatility ():** 21-day rolling standard deviation.
-3. **Implied Volatility ():** Forward-looking fear gauge.
+1. **Log-Returns** ($r_t$): $\ln(P_t / P_{t-1})$
+2. **Realized Volatility** ($\sigma_{21}$): 21-day rolling standard deviation.
+3. **Implied Volatility** ($VIX$): Forward-looking fear gauge.
 
 ### **2.2 Unsupervised Regime Detection**
 
