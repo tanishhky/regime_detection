@@ -1,13 +1,54 @@
+# Dynamic Regime-Based Sector Allocation & Tail Risk Hedging
+
+**Author:** Tanishk Yadav  
+**Date:** January 2026  
+**Institution:** New York University, Tandon School of Engineering  
+
+## Overview
+
+This project develops a dynamic risk management system that utilizes **Gaussian Mixture Models (GMM)** to detect latent market regimes and adjust sector exposure accordingly. By analyzing S&P 500 sector data, the model identifies distinct market states (*Low Volatility*, *Transition*, *Crisis*) and optimizes sector allocation to minimize drawdown while capturing upside.
+
+## Getting Started
+
+### Prerequisites
+
+*   Python 3.8+
+*   Jupyter Notebook
+
+### Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/tanishhky/regime_detection.git
+    cd regime_detection
+    ```
+    *(Note: Replace with actual repository URL if different)*
+
+2.  Install the required dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+### Usage
+
+1.  Open the Jupyter Notebook:
+    ```bash
+    jupyter notebook main.ipynb
+    ```
+
+2.  Run the cells sequentially to perform data ingestion, regime detection, and strategy backtesting.
+
+## Project Structure
+
+*   `main.ipynb`: Core analysis notebook containing data fetching, GMM modeling, and backtesting.
+*   `market_regimes.csv`: Output file containing identified market regimes.
+*   `final_strategy_signals.csv`: Generated trading signals based on the strategy.
+*   `requirements.txt`: Python package dependencies.
+*   `README.md`: Project documentation and research report.
+
 ---
 
-# **Research Report: Dynamic Regime-Based Sector Allocation & Tail Risk Hedging**
-
-**Author:** Tanishk Yadav
-**Date:** January 2026
-**Institution:** New York University, Tandon School of Engineering
-**Project Type:** Quantitative Risk Management / Algorithmic Trading
-
----
+# Research Report
 
 ## **1. Executive Summary**
 
@@ -116,15 +157,9 @@ We employed an **Exhaustive Grid Search** to determine the optimal asset basket 
 
 | Regime | Signal | Optimized Basket | Rationale |
 | --- | --- | --- | --- |
-| **0** | **Bull** | `XLF, XLU, XLK, XLV, XLC` | **"All-Weather Growth"**<br>
-
-<br>Balances aggressive Tech/Comm (XLK, XLC) with Financials (XLF) and Healthcare (XLV) to capture upside while smoothing daily variance. |
-| **1** | **Transition** | `XLU, XLV, XLP` | **"The Shield"**<br>
-
-<br>When VIX rises, the model retreats to low-beta sectors (Utilities, Staples). This prevents "Whipsaw" losses during false alarms. |
-| **2** | **Crisis** | `CASH` | **"The Stop Loss"**<br>
-
-<br>Complete exit to risk-free assets. This avoids the "left tail" events (e.g., COVID Crash) entirely. |
+| **0** | **Bull** | `XLF, XLU, XLK, XLV, XLC` | **"All-Weather Growth"**<br><br>Balances aggressive Tech/Comm (XLK, XLC) with Financials (XLF) and Healthcare (XLV) to capture upside while smoothing daily variance. |
+| **1** | **Transition** | `XLU, XLV, XLP` | **"The Shield"**<br><br>When VIX rises, the model retreats to low-beta sectors (Utilities, Staples). This prevents "Whipsaw" losses during false alarms. |
+| **2** | **Crisis** | `CASH` | **"The Stop Loss"**<br><br>Complete exit to risk-free assets. This avoids the "left tail" events (e.g., COVID Crash) entirely. |
 
 ---
 
