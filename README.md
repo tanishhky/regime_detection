@@ -1,8 +1,13 @@
+
+---
+
 # Dynamic Regime-Based Sector Allocation & Tail Risk Hedging
 
-**Author:** Tanishk Yadav  
-**Date:** January 2026  
-**Institution:** New York University, Tandon School of Engineering  
+**Author:** Tanishk Yadav
+
+**Date:** January 2026
+
+**Institution:** New York University, Tandon School of Engineering
 
 ## Overview
 
@@ -12,39 +17,45 @@ This project develops a dynamic risk management system that utilizes **Gaussian 
 
 ### Prerequisites
 
-*   Python 3.8+
-*   Jupyter Notebook
+* Python 3.8+
+* Jupyter Notebook
 
 ### Installation
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/tanishhky/regime_detection.git
-    cd regime_detection
-    ```
-    *(Note: Replace with actual repository URL if different)*
+1. Clone the repository:
+```bash
+git clone https://github.com/tanishhky/regime_detection.git
+cd regime_detection
 
-2.  Install the required dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
+```
+
+
+2. Install the required dependencies:
+```bash
+pip install -r requirements.txt
+
+```
+
+
 
 ### Usage
 
-1.  Open the Jupyter Notebook:
-    ```bash
-    jupyter notebook main.ipynb
-    ```
+1. Open the Jupyter Notebook:
+```bash
+jupyter notebook main.ipynb
 
-2.  Run the cells sequentially to perform data ingestion, regime detection, and strategy backtesting.
+```
+
+
+2. Run the cells sequentially to perform data ingestion, regime detection, and strategy backtesting.
 
 ## Project Structure
 
-*   `main.ipynb`: Core analysis notebook containing data fetching, GMM modeling, and backtesting.
-*   `market_regimes.csv`: Output file containing identified market regimes.
-*   `final_strategy_signals.csv`: Generated trading signals based on the strategy.
-*   `requirements.txt`: Python package dependencies.
-*   `README.md`: Project documentation and research report.
+* `main.ipynb`: Core analysis notebook containing data fetching, GMM modeling, and backtesting.
+* `market_regimes.csv`: Output file containing identified market regimes.
+* `final_strategy_signals.csv`: Generated trading signals based on the strategy.
+* `requirements.txt`: Python package dependencies.
+* `README.md`: Project documentation and research report.
 
 ---
 
@@ -58,9 +69,9 @@ By analyzing S&P 500 sector data from 2018 to 2026, we identified three distinct
 
 **Key Findings:**
 
-* **Alpha Generation:** The optimized strategy significantly reduced downside risk while maintaining participation in bull markets.
-* **Risk Reduction:** Maximum Drawdown was reduced from **-35.75%** (S&P 500 Benchmark) to **-16.11%** (Dynamic Strategy).
-* **Capital Preservation:** The model correctly identified "Cash" (Treasuries) as the only statistically viable hedge during Regime 2 (Crisis), rejecting the common heuristic of using "Defensive Stocks" during systemic collapses.
+* **The Failure of Heuristics:** Traditional "Defensive Rotation" strategies (buying Utilities during crashes) performed *worse* than the broad market (-40% Drawdown vs -35%).
+* **Crisis Alpha:** An aggressive AI strategy identified Technology as the "Safe Haven" of the 2020s, generating **+214%** total return.
+* **Institutional Safety:** The final "Risk Managed" strategy utilized Cash to reduce portfolio volatility to **13%** (vs Market 19%) and Drawdown to **-16%** (vs Market -35%).
 
 ---
 
@@ -119,9 +130,8 @@ The Expectation-Maximization (EM) algorithm converged on three distinct states:
 | **Regime 2** | **Crisis** | Extreme Volatility, Negative Drift, Correlation . |  |
 
 *(Note: In the final notebook, Regime labels may be reordered based on sorted volatility).*
-
-![Market Regimes Detection](assets/market_regimes.png)
-*Figure 1: S&P 500 Price colored by identified Market Regimes (Green=Bull, Yellow=Transition, Red=Crisis). Notice the high volatility clusters captured by the Red regime.*
+![Figure 1](./assets/fig1.png)
+*Figure 1: S&P 500 Price colored by identified Market Regimes. Notice the high volatility clusters (Red) capturing 2020 and 2022.*
 
 ---
 
@@ -136,71 +146,119 @@ Using Ward's Linkage method on the correlation matrix of the 11 sectors, we obse
 * **In Regime 0 (Bull):** The dendrogram shows "tall" branches, indicating high Euclidean distance between clusters. *Result: Tech (XLK) can be effectively hedged with Energy (XLE).*
 * **In Regime 2 (Crisis):** The dendrogram "flattens." The distance between disparate sectors (e.g., Tech and Utilities) approaches zero. *Result: All assets fall together.*
 
-> **Quant Insight:** This structural breakdown confirms that "Sector Rotation" is insufficient during a Regime 2 event. A purely "Risk-Off" asset (Cash/Treasuries) is required.
+![Figure 2](./assets/fig2.png)
+*Figure 2: Regime-Dependent Correlation Structures. The "Tree" collapses in Regime 2, visually demonstrating contagion.*
 
 ---
 
-## **5. Strategy Optimization & Backtesting**
+## **5. Comparative Strategy Analysis ("The Face-Off")**
 
-We employed an **Exhaustive Grid Search** to determine the optimal asset basket for each regime. The algorithm tested  combinations per regime to maximize the Sharpe Ratio and minimize Max Drawdown.
+To ensure the robustness of the final model, we performed a "face-off" backtest comparing three distinct approaches to handling regime shifts. This analysis allows investors to select a strategy based on their specific Risk/Reward preference.
 
-### **5.1 The Optimization Process**
+We compared the following portfolios over the 2018–2026 period:
 
-1. **Baseline (Naive):** Buy & Hold SPY.
-2. **Iteration 1 (Active):** Rotate into Defensive Stocks (XLU, XLP) during Crisis.
-* *Result:* Failed. Drawdown -37%. (Defensive stocks still have Beta > 0.5 during crashes).
+### **Strategy A: The "Human Heuristic" (Benchmark)**
 
-
-3. **Iteration 2 (AI-Selected):** Allowed the optimizer to select "Cash" (0% Return, 0 Volatility).
-* *Result:* Success. The algorithm rejected all stock sectors for Regime 2.
+* **Logic:** Relies on conventional market wisdom.
+* *Bull:* Buy Aggressive Tech (`XLK`, `XLC`).
+* *Crisis:* Rotate into "Safe" Defensives (`XLU`, `XLP`).
 
 
+* **Hypothesis:** Defensive stocks will hold value during a crash.
 
-### **5.2 The "Golden Strategy" Configuration**
+### **Strategy B: AI Optimized - Fully Invested (Aggressive)**
 
-| Regime | Signal | Optimized Basket | Rationale |
-| --- | --- | --- | --- |
-| **0** | **Bull** | `XLF, XLU, XLK, XLV, XLC` | **"All-Weather Growth"**<br><br>Balances aggressive Tech/Comm (XLK, XLC) with Financials (XLF) and Healthcare (XLV) to capture upside while smoothing daily variance. |
-| **1** | **Transition** | `XLU, XLV, XLP` | **"The Shield"**<br><br>When VIX rises, the model retreats to low-beta sectors (Utilities, Staples). This prevents "Whipsaw" losses during false alarms. |
-| **2** | **Crisis** | `CASH` | **"The Stop Loss"**<br><br>Complete exit to risk-free assets. This avoids the "left tail" events (e.g., COVID Crash) entirely. |
+* **Logic:** The AI selects the best-performing stock basket for every regime. Cash is **not** allowed.
+* *Crisis:* The AI selected Tech (`XLK`) for Regime 2, identifying that recent crises (COVID, AI) favored digital assets.
 
----
 
-## **6. Performance Metrics**
+* **Profile:** High Risk, High Reward.
 
-The dynamic strategy was backtested against the S&P 500 (SPY) Buy & Hold approach over the 2018–2026 period.
+### **Strategy C: AI Optimized - Risk Managed (Balanced)**
 
-![Performance Comparison](assets/performance_comparison.png)
-*Figure 2: Cumulative Return Comparison. The Dynamic Strategy (Blue) preserves capital during the 2020 and 2022 downturns, leading to superior compounding.*
+* **Logic:** The AI selects the best asset, **including Cash**, for every regime.
+* *Crisis:* The AI selected `CASH` (Treasuries).
 
-| Metric | S&P 500 (Benchmark) | Dynamic Regime Strategy | Improvement |
-| --- | --- | --- | --- |
-| **Total Return** | **138.70%** | **188.58%** | **+49.88%** |
-| **Sharpe Ratio** | 0.65 | **0.92** | **Superior Risk-Adj Return** |
-| **Max Drawdown** | **-35.75%** | **-16.11%** | **Risk Halved** |
-| **Recovery Load** | +55.6% return needed to recover | +19.2% return needed to recover | **Faster Compounding** |
-| **Stress Test (2020)** | Full Crash Exposure | Exited to Cash in early March | **Pass** |
-| **Stress Test (2022)** | -19% Loss | Hedged via Regime 1 Baskets | **Pass** |
 
-### **6.1 Drawdown Analysis**
-
-The strategy's primary alpha comes from **capital preservation**. By avoiding the deep drawdowns of 2020 and 2022, the portfolio requires significantly less "recovery growth" to reach new all-time highs. This illustrates the mathematical reality that *avoiding a 50% loss is more valuable than capturing a 50% gain.*
-
-![Drawdown Analysis](assets/drawdown.png)
-*Figure 3: Drawdown Comparison. The strategy significantly reduces the depth and duration of drawdowns.*
+* **Profile:** Capital Preservation focus.
 
 ---
 
-## **7. Conclusion & Future Work**
+## **6. Performance Results**
 
-This project demonstrates that **Regime-Conditional Correlation** is a solvable problem using unsupervised learning. The GMM successfully identified the latent "Crisis State" where diversification fails, allowing the system to mechanically enact a "Stop Loss" by moving to Cash.
+The comparative analysis reveals that traditional diversification strategies failed, while the AI-driven models significantly outperformed on a risk-adjusted basis.
 
-**Implications for Fund Management:**
-The inclusion of a "Transition Regime" (Regime 1) is the critical innovation. Unlike binary "Risk On / Risk Off" models which suffer from excessive trading costs and whipsaw, the Transition Regime acts as a buffer, allowing the portfolio to hold Defensive Equities before committing to a full exit.
+| Strategy | Total Return | Sharpe Ratio | Max Drawdown | Ann. Volatility |
+| --- | --- | --- | --- | --- |
+| **S&P 500 (Base)** | 143.71% | 0.70 | -35.75% | 19.60% |
+| **A: Human Heuristic** | 134.20% | 0.65 | **-40.38%** | 20.73% |
+| **B: AI (Stock Only)** | **214.29%** | **0.92** | -27.21% | 18.31% |
+| **C: AI (Risk Managed)** | 129.46% | 0.90 | **-16.11%** | **13.11%** |
 
-**Future Extensions:**
+![Figure 3](./assets/fig3.png)
+*Figure 3: Equity Curve Comparison. Note how Strategy C (Green) goes flat during crashes, preserving capital, while Strategy A (Red) suffers deeper losses than the market.*
 
-* Integration of alternative data (Sentiment Analysis) to speed up regime detection.
-* Application of the regime overlay to specific Factor Strategies (Momentum vs. Mean Reversion).
+### **6.1 Critical Analysis**
+
+#### **1. The Failure of Traditional Wisdom (Strategy A)**
+
+The "Human Heuristic" strategy was the worst performer.
+
+* **Underperformance:** It returned less than the market (+134% vs +143%).
+* **Higher Risk:** It suffered a larger drawdown (-40.38%) than the unhedged S&P 500.
+* **Root Cause:** In the 2022 bear market, "Defensive" sectors like Utilities and Staples became highly correlated with the broad market due to rising interest rates. This proves that **sector rotation is no longer a reliable hedge for systemic inflation shocks.**
+
+#### **2. The "Crisis Alpha" Phenomenon (Strategy B)**
+
+The Fully Invested AI strategy generated massive alpha (**+214% Total Return**).
+
+* **Insight:** The GMM correctly identified that during the specific crises of 2020 (Lockdowns) and 2023 (Banking/AI), Technology stocks acted as the de-facto "safe haven" due to growth potential.
+* **Result:** It delivered nearly double the market's excess return with a superior Sharpe Ratio (0.92).
+
+#### **3. Institutional-Grade Safety (Strategy C)**
+
+The Risk-Managed (Cash) strategy serves a different mandate: **Capital Preservation.**
+
+* **Volatility Reduction:** It slashed annual volatility to **13.11%** (vs 19.60% for SPY).
+* **Drawdown Control:** It reduced the maximum loss to **-16.11%**, effectively eliminating "Tail Risk."
+* **Trade-off:** While it slightly trailed the market in Total Return (+129% vs +143%) due to holding cash during rapid v-shaped recoveries, its risk-adjusted return (Sharpe 0.90) is far superior to the benchmark (0.70).
+
+![Figure 4](./assets/fig4.png)
+*Figure 4: Drawdown Depth. Strategy C (Green) effectively eliminates the "Tail Risk," never suffering a loss greater than 16%, whereas the Market and Heuristic strategies suffered ~35-40% losses.*
+
+
+### **6.2 Visualizing the Edge**
+![Figure 5](./assets/fig4.png)
+*Figure 3: Equity Curves. Note how Strategy C (Green) goes flat (horizontal) during the 2020 and 2022 crashes, preserving gains while Strategy A (Red) and the S&P 500 (Gray) collapse.*
+![Figure 6](./assets/fig5.png)
+*Figure 4: Drawdown Depth. The "Cash" strategy (Green) is the only one that avoided a >20% Bear Market loss.*
+
+### **6.3 Risk-Reward Asymmetry**
+
+The definitive advantage of the Regime model is best viewed through the **Risk-Reward Bar Chart**.
+
+*Figure 5: Total Return vs. Max Drawdown. This chart demonstrates "Efficiency." The Risk-Managed Strategy (Far Right) sacrifices a small portion of upside to cut the downside risk in half compared to the S&P 500.*
+
+* **S&P 500:** Large Green Bar, Large Red Bar (High Volatility).
+* **AI (Risk Managed):** Solid Green Bar, **Tiny Red Bar** (High Efficiency). This asymmetric profile allows for safe leverage.
 
 ---
+
+*(Make sure you actually save the image as `assets/risk_reward_bars.png` using the python code I gave you!)*
+---
+
+## **7. Conclusion & Investment Recommendation**
+
+This project demonstrates that **Regime-Conditional Correlation** is a solvable problem using unsupervised learning. The results lead to two distinct implementation recommendations based on investor mandate:
+
+1. **For Growth Funds (Alpha Seekers):** Implement **Strategy B**.
+* *Why:* The GMM successfully identifies "Crisis Alpha" opportunities where specific sectors (like Tech) decouple from the broad market crash.
+
+
+2. **For Pension/Endowment Funds (Risk Averse):** Implement **Strategy C**.
+* *Why:* The correlation breakdown in 2022 proves that Equities cannot hedge Equities. **Cash** is the only statistically reliable hedge for Regime 2 volatility.
+
+
+
+**Final Verdict:**
+The "Human Heuristic" of rotating into Defensive sectors is statistically obsolete in the current macro environment. An algorithmic approach utilizing Regime Detection is required to navigate modern correlation structures.
