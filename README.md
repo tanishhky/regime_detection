@@ -120,6 +120,9 @@ The Expectation-Maximization (EM) algorithm converged on three distinct states:
 
 *(Note: In the final notebook, Regime labels may be reordered based on sorted volatility).*
 
+![Market Regimes Detection](assets/market_regimes.png)
+*Figure 1: S&P 500 Price colored by identified Market Regimes (Green=Bull, Yellow=Transition, Red=Crisis). Notice the high volatility clusters captured by the Red regime.*
+
 ---
 
 ## **4. Structural Analysis: The Diversification Breakdown**
@@ -167,17 +170,24 @@ We employed an **Exhaustive Grid Search** to determine the optimal asset basket 
 
 The dynamic strategy was backtested against the S&P 500 (SPY) Buy & Hold approach over the 2018–2026 period.
 
+![Performance Comparison](assets/performance_comparison.png)
+*Figure 2: Cumulative Return Comparison. The Dynamic Strategy (Blue) preserves capital during the 2020 and 2022 downturns, leading to superior compounding.*
+
 | Metric | S&P 500 (Benchmark) | Dynamic Regime Strategy | Improvement |
 | --- | --- | --- | --- |
+| **Total Return** | **138.70%** | **188.58%** | **+49.88%** |
+| **Sharpe Ratio** | 0.65 | **0.92** | **Superior Risk-Adj Return** |
 | **Max Drawdown** | **-35.75%** | **-16.11%** | **Risk Halved** |
 | **Recovery Load** | +55.6% return needed to recover | +19.2% return needed to recover | **Faster Compounding** |
-| **Sharpe Ratio** | 0.65 | **0.86** | **Superior Risk-Adj Return** |
 | **Stress Test (2020)** | Full Crash Exposure | Exited to Cash in early March | **Pass** |
 | **Stress Test (2022)** | -19% Loss | Hedged via Regime 1 Baskets | **Pass** |
 
 ### **6.1 Drawdown Analysis**
 
 The strategy's primary alpha comes from **capital preservation**. By avoiding the deep drawdowns of 2020 and 2022, the portfolio requires significantly less "recovery growth" to reach new all-time highs. This illustrates the mathematical reality that *avoiding a 50% loss is more valuable than capturing a 50% gain.*
+
+![Drawdown Analysis](assets/drawdown.png)
+*Figure 3: Drawdown Comparison. The strategy significantly reduces the depth and duration of drawdowns.*
 
 ---
 
