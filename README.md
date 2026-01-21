@@ -42,6 +42,7 @@ Risk signals were engineered to capture both realized and implied volatility:
 ### **2.2 Unsupervised Regime Detection**
 
 We modeled market returns using a GMM with $K=3$ components. The Probability Density Function is given by:
+
 $$
 p(x) = \sum_{i=1}^{K} \phi_i \cdot \mathcal{N}(x | \mu_i, \Sigma_i)
 $$
