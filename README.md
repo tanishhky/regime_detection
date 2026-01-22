@@ -54,13 +54,21 @@ This effectively clustered the market into three distinct states:
 
 ## **3. The Failure of Diversification**
 
-To validate the necessity of dynamic allocation, we performed **Hierarchical Clustering (Ward's Method)** on the sector correlation matrices.
+To validate the necessity of dynamic allocation, we utilized two forensic methods.
 
-* **Observation:** In Regime 0, the dendrogram shows significant height (distance) between sectors. In Regime 2, the tree collapses.
-* **Conclusion:** **"You cannot hedge Equity Risk with Equities during a Crash."**
+### **3.1 Structural Collapse (Dendrograms)**
+We performed **Hierarchical Clustering (Ward's Method)**. In Regime 2, the "tree" structure collapses, proving that sectors lose their unique identity during crashes.
 
 ![Fig-2](assets/fig2.png)  
-*Figure 2: Regime-Dependent Correlation Structure. The collapse of the tree in Regime 2 visually proves contagion.*
+*Figure 2: The structural collapse of diversification.*
+
+### **3.2 Contagion Intensity (Heatmaps)**
+The correlation heatmaps below confirm the "Red Shift." In a crisis, average correlation spikes, rendering stock-picking ineffective.
+
+![Regime Heatmap](assets/regime_heatmap.png)  
+*Figure 3: The "Red Shift" in correlations during Regime 2 (Right).*
+
+**Conclusion:** **"You cannot hedge Equity Risk with Equities during a Crash."**
 
 ---
 
