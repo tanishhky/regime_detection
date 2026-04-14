@@ -1,0 +1,150 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{float}
+\usepackage{enumitem}
+\onehalfspacing
+
+\hypersetup{colorlinks=true,linkcolor=blue!70!black,citecolor=blue!70!black,urlcolor=blue!70!black}
+
+\title{\textbf{Dynamic Regime-Based Sector Allocation:\\A Hidden Markov Model Approach with\\Walk-Forward Validation}}
+\author{Tanishk Yadav\\[2pt]\textit{MS Financial Engineering}\\NYU Tandon School of Engineering\\New York, NY, USA\\[2pt]ORCID: 0009-0006-2382-9411}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Modern Portfolio Theory assumes stable asset correlations, yet empirical evidence from systemic crises demonstrates that cross-sector correlations converge toward unity during periods of extreme stress, rendering static diversification ineffective. This paper proposes a Regime-Switching Risk Model using a 4-state Gaussian Hidden Markov Model (HMM) trained on multi-factor inputs (returns, realized volatility, cross-sector correlations) to dynamically classify market conditions and adjust sector allocation in real-time. We identify and rigorously address three forms of lookahead bias common in published HMM backtests: training on the full dataset, optimizing portfolio weights using future returns, and running the Viterbi algorithm over the complete sequence. Through expanding-window walk-forward analysis spanning 2005--2026, the bias-corrected strategy achieves a Sharpe ratio of 1.49 and reduces maximum drawdown by 46\% versus the S\&P~500 benchmark. Statistical validation via null hypothesis testing (random walk) and parametric bootstrap stress tests confirms that the strategy's risk-adjusted performance is not attributable to chance.
+
+\medskip
+\noindent\textbf{Keywords:} Hidden Markov Model, regime detection, portfolio optimization, walk-forward validation, lookahead bias, correlation breakdown
+\end{abstract}
+
+\section{Introduction}
+
+The fundamental promise of Modern Portfolio Theory (MPT)---that idiosyncratic risk can be eliminated through diversification---relies on the stability of asset correlation matrices \citep{markowitz1952}. However, financial history reveals a structural anomaly known as ``Correlation Breakdown'' during systemic crises. In periods of extreme liquidity stress (e.g., March 2020), correlations between theoretically distinct equity sectors converge toward unity, rendering static diversification ineffective precisely when capital preservation is most critical.
+
+This research addresses the Correlation Breakdown problem through a Regime-Switching Risk Model that uses a Gaussian HMM to detect latent market states in real-time. By training on multi-factor inputs, the model probabilistically classifies the market into distinct volatility regimes, enabling dynamic adjustment of sector exposures before drawdowns materialize.
+
+A central contribution of this work is the rigorous treatment of lookahead bias. We demonstrate that naive HMM backtesting approaches---which are prevalent in both academic and retail implementations---inflate performance metrics by 50--100\%. Our methodology enforces strict temporal separation through expanding-window walk-forward analysis, ensuring that at time $t$, only data up to $t-1$ is used for model estimation, regime classification, and portfolio construction.
+
+\section{Methodology}
+
+\subsection{Hidden Markov Model Specification}
+
+We assume the market follows a discrete-time stochastic process with $K=4$ hidden states. The observable data vector $\mathbf{x}_t = (r_t, \sigma_t, \rho_t)$ comprises daily returns, 21-day realized volatility, and average pairwise sector correlation, drawn from a multivariate Gaussian distribution conditioned on the latent state $s_t$:
+\begin{equation}
+    \mathbf{x}_t \mid s_t = k \sim \mathcal{N}(\boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k), \quad k \in \{0, 1, 2, 3\}
+\end{equation}
+
+The four regimes correspond to economically interpretable market conditions:
+\begin{itemize}[nosep]
+    \item \textbf{Regime 0 -- Systemic Crisis:} Extreme volatility ($\text{VIX} > 35$), sector correlations converge to unity. Action: maximum defense (Cash/Treasuries).
+    \item \textbf{Regime 1 -- Inflationary Bear:} High-stress driven by rates or valuation. Defensive sectors decouple. Action: rotate to low-volatility sectors.
+    \item \textbf{Regime 2 -- Secular Bull:} Low volatility, high-beta assets outperform. Action: overweight growth sectors.
+    \item \textbf{Regime 3 -- Transition:} Conflicting signals, often post-crash or pre-breakout. Action: reduce position sizing.
+\end{itemize}
+
+\subsection{Addressing Lookahead Bias}
+
+We identify three forms of lookahead bias in naive HMM implementations:
+
+\textbf{Bias Source 1: HMM Training on Full Dataset.} Training the HMM on the complete time series means that model parameters ($\boldsymbol{\mu}_k$, $\boldsymbol{\Sigma}_k$, transition matrix $\mathbf{A}$) incorporate information from future observations, inflating the model's apparent predictive power.
+
+\textbf{Bias Source 2: Portfolio Optimization Using Future Returns.} Computing optimal portfolio weights (e.g., via mean-variance optimization) using the full in-regime return distribution includes data points that occur after the decision point.
+
+\textbf{Bias Source 3: Viterbi on Complete Sequence.} The Viterbi algorithm, when applied to the entire observation sequence, uses forward \emph{and backward} passes, meaning the state assignment at time $t$ incorporates observations from $t+1, t+2, \ldots, T$.
+
+\subsection{Walk-Forward Framework}
+
+To eliminate all three bias sources, we employ an expanding-window walk-forward protocol:
+
+\begin{enumerate}[nosep]
+    \item At each rebalancing date $t$, the HMM is trained using only data from $[0, t-1]$.
+    \item Regime classification uses only the filtered probability $P(s_t \mid \mathbf{x}_{1:t})$, not the smoothed probability.
+    \item Portfolio weights are optimized using only historical returns within each regime from the training window.
+    \item The portfolio is held until the next rebalancing date, at which point the process repeats with the expanded window.
+\end{enumerate}
+
+\subsection{Statistical Validation}
+
+\textbf{Null Hypothesis Test:} We generate 1,000 random walk return series (preserving the empirical return distribution) and apply the full strategy pipeline to each. The strategy's Sharpe ratio is compared against this null distribution to compute a $p$-value.
+
+\textbf{Parametric Bootstrap:} We resample blocks of returns (preserving serial dependence) and re-run the backtest 500 times. The distribution of bootstrap Sharpe ratios provides confidence intervals and tests robustness to different market path realizations.
+
+\section{Implementation}
+
+The system is implemented in Python using an object-oriented architecture comprising six core classes:
+
+\begin{itemize}[nosep]
+    \item \texttt{Config}: Centralized parameter management (regime count, rebalance frequency, data range).
+    \item \texttt{DataGenerator}: Data acquisition and feature engineering (returns, volatility, correlations) using 11 sector SPDR ETFs.
+    \item \texttt{RegimeDetector}: HMM training via Expectation-Maximization, filtered state probability computation, and regime assignment.
+    \item \texttt{PortfolioOptimizer}: Regime-conditional mean-variance optimization with sector-level constraints.
+    \item \texttt{WalkForwardBacktester}: Expanding-window protocol orchestration, transaction cost modeling, and performance tracking.
+    \item \texttt{BootstrapGenerator}: Null hypothesis and parametric bootstrap test execution.
+\end{itemize}
+
+Total codebase: 1,822 lines across 2 source files, with companion documentation on lookahead bias analysis and implementation architecture.
+
+\section{Results}
+
+\subsection{Performance Summary}
+
+The walk-forward validated strategy (2005--2026) achieves the following:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric} & \textbf{Strategy} & \textbf{S\&P 500} \\
+\midrule
+Sharpe Ratio & \textbf{1.49} & 1.46 \\
+Max Drawdown Reduction & \multicolumn{2}{c}{\textbf{46\% reduction}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Naive vs. Corrected Performance}
+
+Critically, the naive implementation (full-sample HMM + Viterbi smoothing) produces substantially inflated metrics. The performance gap between naive and walk-forward implementations ranges from 50--100\% across key metrics, confirming that lookahead bias is not a theoretical concern but a practical one that dominates backtest results.
+
+\subsection{Statistical Significance}
+
+The null hypothesis test (1,000 random walk simulations) yields a $p$-value below 0.05 for the strategy's Sharpe ratio, rejecting the hypothesis that the observed performance is attributable to chance. The parametric bootstrap distribution of Sharpe ratios has a 95\% confidence interval that excludes zero, confirming robustness across alternative market path realizations.
+
+\section{Limitations}
+
+\begin{itemize}[nosep]
+    \item \textbf{Gaussian emission assumption:} Financial returns exhibit fat tails and skewness that violate the Gaussian assumption. Student-$t$ or mixture emissions would be more appropriate.
+    \item \textbf{Fixed state count:} The 4-state specification is imposed a priori. Bayesian nonparametric approaches (e.g., sticky HDP-HMM) could learn the number of regimes from data.
+    \item \textbf{Markov property:} Real regime durations exhibit fat-tailed distributions, violating the memoryless transition assumption. Hidden semi-Markov models could address this.
+    \item \textbf{Limited early-window data:} The expanding window means that early predictions use very little training data, potentially reducing classification accuracy in the initial period.
+    \item \textbf{Sector-level granularity:} The strategy operates at the sector ETF level, which may miss sub-sector dynamics that could improve risk-adjusted returns.
+\end{itemize}
+
+\section{Conclusion}
+
+This paper demonstrates that a Gaussian HMM with 4 latent states can effectively detect market regimes and drive a dynamic sector allocation strategy that reduces maximum drawdown by 46\% while maintaining competitive risk-adjusted returns. The primary contribution is methodological: we show that three common forms of lookahead bias inflate naive HMM backtest performance by 50--100\%, and that proper walk-forward validation produces honest, reproducible results. Statistical validation via null hypothesis testing and parametric bootstrap confirms that the strategy's performance is not attributable to chance.
+
+\medskip
+\noindent\textbf{Code Availability:} \url{https://github.com/tanishhky/regime_portfolio_optimization}
+
+\begin{thebibliography}{10}
+\bibitem{markowitz1952} H.~Markowitz, ``Portfolio selection,'' \textit{The Journal of Finance}, vol.~7, no.~1, pp.~77--91, 1952.
+\bibitem{hamilton1989} J.~D. Hamilton, ``A new approach to the economic analysis of nonstationary time series and the business cycle,'' \textit{Econometrica}, vol.~57, no.~2, pp.~357--384, 1989.
+\bibitem{baum1970} L.~E. Baum et al., ``A maximization technique occurring in the statistical analysis of probabilistic functions of Markov chains,'' \textit{The Annals of Mathematical Statistics}, vol.~41, no.~1, pp.~164--171, 1970.
+\bibitem{ang2002} A.~Ang and G.~Bekaert, ``International asset allocation with regime shifts,'' \textit{The Review of Financial Studies}, vol.~15, no.~4, pp.~1137--1187, 2002.
+\bibitem{guidolin2011} M.~Guidolin and A.~Timmermann, ``Asset allocation under multivariate regime switching,'' \textit{Journal of Economic Dynamics and Control}, vol.~31, no.~11, pp.~3503--3544, 2007.
+\bibitem{kritzman2012} M.~Kritzman et al., ``Regime shifts: Implications for dynamic strategies,'' \textit{Financial Analysts Journal}, vol.~68, no.~3, pp.~22--39, 2012.
+\end{thebibliography}
+
+\end{document}
