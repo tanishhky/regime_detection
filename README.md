@@ -1,3 +1,13 @@
+> **ARCHIVED (2026-07-04).** This was the first iteration of my regime-detection
+> work. It is superseded by
+> [regime-adaptive-portfolio](https://github.com/tanishhky/regime-adaptive-portfolio),
+> which replaces the single HMM with four orthogonal stress detectors
+> (CUSUM / correlation / breadth / skewness), a 2-of-4 fuzzy consensus, a
+> reconciled single-vintage results set, and honest caveats (including where
+> simple trend rules win). The headline numbers below come from a synthetically
+> backfilled history and predate that audit; treat them as historical record,
+> not current results.
+
 # Regime-Based Portfolio Optimization
 
 ## Dynamic Regime-Based Sector Allocation: A Hidden Markov Model Approach
@@ -5,7 +15,7 @@
 **Tanishk Yadav**
 
 ### Abstract
-The fundamental promise of Modern Portfolio Theory (MPT)—that idiosyncratic risk can be eliminated through diversification—relies heavily on the stability of asset correlation matrices. However, financial history reveals a structural anomaly known as **"Correlation Breakdown"** during systemic crises. In periods of extreme liquidity stress (e.g., March 2020), correlations between theoretically distinct equity sectors converge toward unity, rendering static diversification ineffective precisely when capital preservation is most critical.
+The fundamental promise of Modern Portfolio Theory (MPT), that idiosyncratic risk can be eliminated through diversification—relies heavily on the stability of asset correlation matrices. However, financial history reveals a structural anomaly known as **"Correlation Breakdown"** during systemic crises. In periods of extreme liquidity stress (e.g., March 2020), correlations between theoretically distinct equity sectors converge toward unity, rendering static diversification ineffective precisely when capital preservation is most critical.
 
 This research proposes a **Regime-Switching Risk Model** utilizing a Gaussian Hidden Markov Model (HMM) to detect latent market states in real-time. By training on multi-factor inputs over a synthetically backfilled history (2005–2022), the model probabilistically classifies the market into distinct volatility regimes.
 
